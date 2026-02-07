@@ -1,54 +1,28 @@
-# SnapShop - Intelligent Visual Commerce Engine
+# Lumina - The AI-Powered Style Engine
 
-SnapShop is a backend API service that transforms "messy" real-world photos (e.g., street style, party photos) into purchasable product matches using advanced computer vision models.
+Lumina is an intelligent visual commerce backend that understands fashion not just by keywords, but by *style, vibe, and visual similarity*. It leverages state-of-the-art computer vision models (Owlv2, SigLIP) to power next-generation e-commerce search.
 
-## 🚀 The Concept
-Input: Any unstructured image (JPEG/PNG)
-Output: Distinct clothing items detected, cropped, and matched to similar purchasable products.
+## 🚀 The Vision
+Traditional search: "Red dress" -> Returns 10,000 red dresses.
+**Lumina Search**: "Find me a dress with this *bohemian vibe* but for a *formal wedding*" -> Returns the perfect match.
 
 ## 🛠️ The Tech Stack
 *   **Core AI**:
-    *   **Owlv2**: Zero-Shot Object Detection (detects "shirt", "dress", "shoes" without specific training).
-    *   **SigLIP**: Embedding model for generating high-dimensional vector representations of cropped items.
-*   **Backend**: FastAPI (Python) - High-performance async API for serving ML models.
-*   **Database**: Qdrant (Vector Database) - Stores and searches product embeddings.
-*   **Infrastructure**: Docker & Docker Compose.
+    *   **Qwen-VL**: For high-level scene understanding and tagging (e.g., "Park", "Casual", "Summer").
+    *   **Owlv2**: Zero-Shot Object Detection (detects "shirt", "dress", "shoes" with high precision).
+    *   **SigLIP**: Multimodal Embeddings for vector search (matching text description to image content).
+*   **Backend**: FastAPI (Python) - Async, high-performance API.
+*   **Database**: Qdrant (Vector Database) - For storing 100k+ product embeddings.
+*   **Infrastructure**: Docker, Redis (Task Queue), GPU Support (CUDA).
 
 ## 💡 Key Features
-1.  **"Magic Crop" Endpoint**:
-    *   Send image -> Run Owlv2 -> Return bounding boxes for apparel items.
-2.  **Visual Similarity Search**:
-    *   Crop detected item -> Generate SigLIP embedding -> Query Qdrant for nearest neighbors.
-3.  **Hybrid Filtering**:
-    *   Filter visual search results with text queries (e.g., "blue denim jacket").
+1.  **"Vibe Check" Endpoint**: Upload an image -> Get a structured JSON breakdown of the *vibe*, *occasion*, and *setting*.
+2.  **"Magic Crop" Object Detection**: Automatically isolate fashion items from complex scenes.
+3.  **Semantic Search**: Search for products using natural language ("outfit for a beach party") or image queries.
 
-## 📅 Implementation Plan
-
-### Week 1: Backend & AI Foundation
-- [ ] Set up FastAPI project structure.
-- [ ] Implement Owlv2 inference pipeline (Object Detection).
-- [ ] Create API endpoint for image upload and detection.
-
-### Week 2: Database & Search
-- [ ] Deploy Qdrant with Docker.
-- [ ] Implement SigLIP embedding pipeline.
-- [ ] Build "Indexer" script to ingest product catalog.
-- [ ] Connect Detection -> Embedding -> Search workflow.
-
-## 📈 Why This Matters
-*   Demonstrates ability to host and run open-source models (not just API calls).
-*   Showcases Data Engineering skills with vector search at scale.
-*   Builds a "holy grail" feature for modern e-commerce (Visual Search).
-
-## 🏃 Getting Started
-
-### Prerequisites
-*   Python 3.10+
-*   Docker & Docker Compose
-
-### Running the API
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+## 📅 Roadmap for "Green Squares"
+1.  **Core API Setup**: FastAPI boilerplate and configuration.
+2.  **Database Layer**: Qdrant connection and schema design.
+3.  **Vision Service**: Owlv2 integration for detection.
+4.  **Embedding Service**: SigLIP pipeline for vectors.
+5.  **Search Logic**: The retrieval engine connecting it all.
