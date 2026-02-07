@@ -1,14 +1,32 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, File, UploadFile, HTTPException
 from app.services.owlv2_service import Owlv2Service
+from typing import List, Optional
+import io
 
 router = APIRouter()
 
 @router.post("/")
-async def detect_items(file: UploadFile = File(...)):
+async def detect_apparel(
+    file: UploadFile = File(...),
+    labels: Optional[List[str]] = None
+):
     """
-    Detect clothing items in an uploaded image using Owlv2.
+    Zero-Shot Detection of Fashion Items.
+    Upload an image -> Get bounding boxes for 'shirt', 'dress', 'shoes', etc.
     """
-    # This is a placeholder. Owlv2 service implementation will be complex.
-    # Service logic should be separated.
-    results = Owlv2Service.detect(file)
-    return results
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+
+    try:
+        content = await file.read()
+        results = Owlv2Service.detect(content, labels)
+        return {
+            "status": "success",
+            "meta": {
+                "filename": file.filename,
+                "model": "Owlv2-Ensemble"
+            },
+            "data": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
