@@ -20,9 +20,42 @@ Traditional search: "Red dress" -> Returns 10,000 red dresses.
 2.  **"Magic Crop" Object Detection**: Automatically isolate fashion items from complex scenes.
 3.  **Semantic Search**: Search for products using natural language ("outfit for a beach party") or image queries.
 
-## 📅 Roadmap for "Green Squares"
-1.  **Core API Setup**: FastAPI boilerplate and configuration.
-2.  **Database Layer**: Qdrant connection and schema design.
-3.  **Vision Service**: Owlv2 integration for detection.
-4.  **Embedding Service**: SigLIP pipeline for vectors.
-5.  **Search Logic**: The retrieval engine connecting it all.
+## 🏗️ Project Structure
+```
+Lumina/
+├── backend/           # FastAPI backend
+│   ├── app/
+│   │   ├── api/      # API endpoints
+│   │   ├── core/     # Configuration
+│   │   └── services/ # AI model services
+│   └── requirements.txt
+├── frontend/          # Next.js 15 frontend
+│   ├── app/          # App router pages
+│   ├── components/   # React components
+│   ├── lib/          # API client & utilities
+│   └── types/        # TypeScript types
+└── docker-compose.yml
+```
+
+## 🚀 Quick Start
+
+### Backend
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Visit `http://localhost:3000` for the UI and `http://localhost:8000/docs` for API docs.
+
+## 📅 Development Progress
+- ✅ **Day 1**: Backend core (FastAPI, Owlv2, SigLIP, Qdrant)
+- ✅ **Day 2**: Frontend setup (Next.js 15, TypeScript, Tailwind)
+- 🚧 **Day 3**: Image upload component (coming next)
