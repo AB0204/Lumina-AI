@@ -58,4 +58,5 @@ Visit `http://localhost:3000` for the UI and `http://localhost:8000/docs` for AP
 ## 📅 Development Progress
 - ✅ **Day 1**: Backend core (FastAPI, Owlv2, SigLIP, Qdrant)
 - ✅ **Day 2**: Frontend setup (Next.js 15, TypeScript, Tailwind)
-- 🚧 **Day 3**: Image upload component (coming next)
+- ✅ **Day 3**: Image upload + Object detection UI
+- 🚧 **Day 4**: Bounding box visualization (coming next)
