@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { ImageUpload } from '@/components/search/image-upload';
+import { BoundingBoxCanvas } from '@/components/search/bounding-box-canvas';
 import { apiClient } from '@/lib/api-client';
 import type { DetectionResult } from '@/types/api';
 
@@ -11,11 +12,19 @@ export default function SearchPage() {
     const [isDetecting, setIsDetecting] = useState(false);
     const [results, setResults] = useState<DetectionResult[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const handleImageSelect = async (file: File) => {
         setIsDetecting(true);
         setError(null);
         setResults([]);
+
+        // Create preview URL for bounding box canvas
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
 
         try {
             const response = await apiClient.detectObjects(file);
@@ -75,35 +84,50 @@ export default function SearchPage() {
 
                 {/* Results */}
                 {results.length > 0 && (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-white">
-                            Detected Items ({results.length})
-                        </h2>
+                    <div className="space-y-8">
+                        {/* Bounding Box Visualization */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">
+                                Visual Detection
+                            </h2>
+                            <BoundingBoxCanvas
+                                imageUrl={imagePreview!}
+                                detections={results}
+                                className="mb-6"
+                            />
+                        </div>
 
-                        <div className="grid md:grid-cols-2 gap-4">
-                            {results.map((result, index) => (
-                                <div
-                                    key={index}
-                                    className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl hover:border-purple-500/50 transition-colors"
-                                >
-                                    <div className="flex justify-between items-start mb-3">
-                                        <h3 className="text-lg font-semibold text-white capitalize">
-                                            {result.label}
-                                        </h3>
-                                        <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm font-medium">
-                                            {(result.score * 100).toFixed(1)}%
-                                        </span>
-                                    </div>
+                        {/* Detection Results List */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">
+                                Detected Items ({results.length})
+                            </h2>
 
-                                    <div className="text-sm text-gray-400 space-y-1">
-                                        <p>Position: ({result.box.xmin}, {result.box.ymin})</p>
-                                        <p>
-                                            Size: {(result.box.xmax - result.box.xmin).toFixed(0)} × {' '}
-                                            {(result.box.ymax - result.box.ymin).toFixed(0)}
-                                        </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                {results.map((result, index) => (
+                                    <div
+                                        key={index}
+                                        className="p-6 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl hover:border-purple-500/50 transition-colors"
+                                    >
+                                        <div className="flex justify-between items-start mb-3">
+                                            <h3 className="text-lg font-semibold text-white capitalize">
+                                                {result.label}
+                                            </h3>
+                                            <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm font-medium">
+                                                {(result.score * 100).toFixed(1)}%
+                                            </span>
+                                        </div>
+
+                                        <div className="text-sm text-gray-400 space-y-1">
+                                            <p>Position: ({result.box.xmin.toFixed(2)}, {result.box.ymin.toFixed(2)})</p>
+                                            <p>
+                                                Size: {(result.box.xmax - result.box.xmin).toFixed(2)} × {' '}
+                                                {(result.box.ymax - result.box.ymin).toFixed(2)}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
