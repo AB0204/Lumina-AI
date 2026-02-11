@@ -60,4 +60,5 @@ Visit `http://localhost:3000` for the UI and `http://localhost:8000/docs` for AP
 - ✅ **Day 2**: Frontend setup (Next.js 15, TypeScript, Tailwind)
 - ✅ **Day 3**: Image upload + Object detection UI
 - ✅ **Day 4**: Bounding box visualization on canvas
-- 🚧 **Day 5**: Semantic search integration (coming next)
+- ✅ **Day 5**: Semantic search integration with SigLIP
+- 🚧 **Day 6**: Polish UI/UX and add demo data (coming next)
