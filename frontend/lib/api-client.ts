@@ -33,4 +33,22 @@ export const apiClient = {
 
         return response.json();
     },
+
+    async searchSimilar(imageFile: File, boundingBox: any, limit: number = 12) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('box', JSON.stringify(boundingBox));
+        formData.append('limit', limit.toString());
+
+        const response = await fetch(`${API_URL}/api/search/similar`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error('Similar search failed');
+        }
+
+        return response.json();
+    },
 };
