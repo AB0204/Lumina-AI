@@ -10,13 +10,12 @@ export interface DetectionResult {
 }
 
 export interface SearchResult {
-    id: string;
+    title: string;
+    image_url: string;
+    product_url?: string;
+    price?: number;
+    category?: string;
     score: number;
-    metadata: {
-        url?: string;
-        title?: string;
-        [key: string]: any;
-    };
 }
 
 export interface ApiResponse<T> {
