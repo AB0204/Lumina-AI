@@ -88,6 +88,62 @@ export default function SearchPage() {
                 {/* Upload Section */}
                 <div className="mb-12">
                     <ImageUpload onImageSelect={handleImageSelect} />
+
+                    {/* Demo Examples */}
+                    <div className="mt-8">
+                        <p className="text-gray-400 mb-4 text-sm font-medium uppercase tracking-wider text-center">
+                            Or try with an example
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {[
+                                {
+                                    label: 'Red Sneakers',
+                                    url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80',
+                                    filename: 'red-sneakers.jpg'
+                                },
+                                {
+                                    label: 'Denim Jacket',
+                                    url: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400&q=80',
+                                    filename: 'denim-jacket.jpg'
+                                },
+                                {
+                                    label: 'Leather Bag',
+                                    url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80',
+                                    filename: 'leather-bag.jpg'
+                                }
+                            ].map((example) => (
+                                <button
+                                    key={example.label}
+                                    onClick={async () => {
+                                        try {
+                                            setIsDetecting(true);
+                                            // Fetch the image and convert to File
+                                            const res = await fetch(example.url);
+                                            const blob = await res.blob();
+                                            const file = new File([blob], example.filename, { type: 'image/jpeg' });
+                                            await handleImageSelect(file);
+                                        } catch (err) {
+                                            console.error('Failed to load example', err);
+                                            setError('Failed to load example image. Please try again.');
+                                            setIsDetecting(false);
+                                        }
+                                    }}
+                                    className="group relative overflow-hidden rounded-xl w-32 h-32 border border-white/10 hover:border-purple-500/50 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                >
+                                    <img
+                                        src={example.url}
+                                        alt={example.label}
+                                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="text-white text-xs font-medium truncate w-full text-center">
+                                            {example.label}
+                                        </span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Loading State */}
