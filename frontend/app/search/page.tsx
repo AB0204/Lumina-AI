@@ -235,6 +235,24 @@ export default function SearchPage() {
                     </div>
                 )}
             </main>
+
+            {/* Footer */}
+            <footer className="border-t border-white/10 mt-auto">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <p className="text-center text-gray-400">
+                        Built by {' '}
+                        <a
+                            href="https://github.com/AB0204"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                            Abhi Bhardwaj
+                        </a>
+                        {' • '} Open Source
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 }
