@@ -55,6 +55,21 @@ npm run dev
 
 Visit `http://localhost:3000` for the UI and `http://localhost:8000/docs` for API docs.
 
+## 🐳 Deployment (Docker)
+
+Run the entire stack with a single command:
+
+```bash
+# Build and start all services
+docker-compose up --build -d
+```
+
+Services will be available at:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000/docs
+- **Qdrant UI**: http://localhost:6333/dashboard
+- **Redis**: http://localhost:6379
+
 ## 📅 Development Progress
 - ✅ **Day 1**: Backend core (FastAPI, Owlv2, SigLIP, Qdrant)
 - ✅ **Day 2**: Frontend setup (Next.js 15, TypeScript, Tailwind)
