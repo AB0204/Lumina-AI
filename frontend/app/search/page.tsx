@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Sparkles, Loader2, Search } from 'lucide-react';
 import Link from 'next/link';
 import { ImageUpload } from '@/components/search/image-upload';
@@ -161,7 +162,7 @@ export default function SearchPage() {
                                     url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&q=80',
                                     filename: 'leather-bag.jpg'
                                 }
-                            ].map((example) => (
+                            ].map((example, idx) => (
                                 <button
                                     key={example.label}
                                     onClick={async () => {
@@ -180,12 +181,15 @@ export default function SearchPage() {
                                     }}
                                     className="group relative overflow-hidden rounded-xl w-32 h-32 border border-white/10 hover:border-purple-500/50 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                 >
-                                    <img
+                                    <Image
                                         src={example.url}
                                         alt={example.label}
-                                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 33vw"
+                                        priority={idx === 0}
+                                        className="object-cover transition-transform group-hover:scale-110"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                         <span className="text-white text-xs font-medium truncate w-full text-center">
                                             {example.label}
                                         </span>
