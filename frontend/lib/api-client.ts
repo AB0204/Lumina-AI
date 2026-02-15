@@ -6,7 +6,7 @@ export const apiClient = {
         formData.append('image', imageFile);
         formData.append('labels', JSON.stringify(['clothing', 'shoes', 'accessories']));
 
-        const response = await fetch(`${API_URL}/api/detect`, {
+        const response = await fetch(`${API_URL}/api/v1/detect`, {
             method: 'POST',
             body: formData,
         });
@@ -19,12 +19,12 @@ export const apiClient = {
     },
 
     async searchByText(query: string, limit: number = 10) {
-        const response = await fetch(`${API_URL}/api/search`, {
+        const response = await fetch(`${API_URL}/api/v1/search`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query, limit }),
+            body: JSON.stringify({ query_text: query, top_k: limit }),
         });
 
         if (!response.ok) {
@@ -40,7 +40,7 @@ export const apiClient = {
         formData.append('box', JSON.stringify(boundingBox));
         formData.append('limit', limit.toString());
 
-        const response = await fetch(`${API_URL}/api/search/similar`, {
+        const response = await fetch(`${API_URL}/api/v1/search/similar`, {
             method: 'POST',
             body: formData,
         });
