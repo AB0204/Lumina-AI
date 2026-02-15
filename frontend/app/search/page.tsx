@@ -17,6 +17,29 @@ export default function SearchPage() {
     const [error, setError] = useState<string | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleTextSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+
+        setIsSearching(true);
+        setError(null);
+        setResults([]);
+        setSearchResults([]);
+        setImagePreview(null);
+        setSelectedFile(null);
+
+        try {
+            const response = await apiClient.searchByText(searchQuery);
+            setSearchResults(response || []);
+        } catch (err) {
+            setError('Failed to search. Please try again.');
+            console.error(err);
+        } finally {
+            setIsSearching(false);
+        }
+    };
 
     const handleImageSelect = async (file: File) => {
         setIsDetecting(true);
@@ -24,6 +47,7 @@ export default function SearchPage() {
         setResults([]);
         setSearchResults([]);
         setSelectedFile(file);
+        setSearchQuery('');
 
         // Create preview URL for bounding box canvas
         const reader = new FileReader();
@@ -42,6 +66,7 @@ export default function SearchPage() {
             setIsDetecting(false);
         }
     };
+
 
     const handleSearchSimilar = async (detection: DetectionResult) => {
         if (!selectedFile) return;
@@ -83,6 +108,31 @@ export default function SearchPage() {
                     <p className="text-xl text-gray-300">
                         Upload an image to detect fashion items and find similar products
                     </p>
+                </div>
+
+                {/* Text Search Section */}
+                <div className="max-w-2xl mx-auto mb-12">
+                    <form onSubmit={handleTextSearch} className="relative">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search for fashion items (e.g., 'summer floral dress')..."
+                            className="w-full px-6 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all pr-12"
+                        />
+                        <button
+                            type="submit"
+                            disabled={isSearching || !searchQuery.trim()}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                    </form>
+                    <div className="mt-4 flex items-center justify-center gap-4 text-sm text-gray-400">
+                        <span className="h-px w-12 bg-white/10"></span>
+                        <span>OR</span>
+                        <span className="h-px w-12 bg-white/10"></span>
+                    </div>
                 </div>
 
                 {/* Upload Section */}
