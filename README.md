@@ -5,7 +5,9 @@
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Next.js](https://img.shields.io/badge/next.js-15-black)
 
-**[📊 Benchmarks](./BENCHMARKS.md)** • **[🏗️ Architecture](./ARCHITECTURE.md)** • **[🐳 Docker](#-deployment-docker)**
+> 🎬 **[Try Live Demo](demo/)** (Deploy to Hugging Face Spaces - FREE!)
+
+**[📊 Benchmarks](./BENCHMARKS.md)** • **[🏗️ Architecture](./ARCHITECTURE.md)** • **[🎮 Demo Setup](./demo/)** • **[🐳 Docker](#-deployment-docker)**
 
 Lumina is an intelligent visual commerce backend that understands fashion not just by keywords, but by *style, vibe, and visual similarity*. It leverages state-of-the-art computer vision models (Owlv2, SigLIP) to power next-generation e-commerce search.
 
@@ -76,6 +78,22 @@ npm run dev
 ```
 
 Visit `http://localhost:3000` for the UI and `http://localhost:8000/docs` for API docs.
+
+## 🎬 Live Demo
+
+Want to try Lumina without installing anything? Deploy a fully functional demo to **Hugging Face Spaces for FREE**!
+
+### What's Included in the Demo
+- ✅ **Object Detection**: Upload fashion images and see AI-powered bounding boxes
+- ✅ **Vibe Check**: Get style analysis (occasion, aesthetic, mood)
+- ✅ **Semantic Search**: Natural language product search
+
+### Deploy in 5 Minutes
+See the [demo/README.md](./demo/) for step-by-step deployment instructions.
+
+**Free Tier**: CPU-only (15-20s inference) - $0 forever ✅  
+**Paid Tier**: GPU acceleration (2-3s inference) - ~$0.60/hour (optional)
+
 
 ## 🐳 Deployment (Docker)
 
