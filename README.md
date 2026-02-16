@@ -1,6 +1,11 @@
 # Lumina - The AI-Powered Style Engine
 
 ![Build Status](https://github.com/AB0204/Lumina-AI/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![Next.js](https://img.shields.io/badge/next.js-15-black)
+
+**[📊 Benchmarks](./BENCHMARKS.md)** • **[🏗️ Architecture](./ARCHITECTURE.md)** • **[🐳 Docker](#-deployment-docker)**
 
 Lumina is an intelligent visual commerce backend that understands fashion not just by keywords, but by *style, vibe, and visual similarity*. It leverages state-of-the-art computer vision models (Owlv2, SigLIP) to power next-generation e-commerce search.
 
@@ -21,6 +26,21 @@ Traditional search: "Red dress" -> Returns 10,000 red dresses.
 1.  **"Vibe Check" Endpoint**: Upload an image -> Get a structured JSON breakdown of the *vibe*, *occasion*, and *setting*.
 2.  **"Magic Crop" Object Detection**: Automatically isolate fashion items from complex scenes.
 3.  **Semantic Search**: Search for products using natural language ("outfit for a beach party") or image queries.
+
+## ⚡ Performance Highlights
+
+| Metric | Value |
+|--------|-------|
+| Cache Hit Latency | <10ms |
+| Vector Search | <5ms |
+| Total (w/ Cache) | <2ms |
+| Model Memory | ~3.2GB |
+
+> See [BENCHMARKS.md](./BENCHMARKS.md) for detailed performance analysis
+
+## 🏗️ System Architecture
+
+View the complete [Architecture Diagram](./ARCHITECTURE.md) showing the request flow through Redis caching, ML pipeline (OWLv2, SigLIP), and Qdrant vector search.
 
 ## 🏗️ Project Structure
 ```
