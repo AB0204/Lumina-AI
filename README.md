@@ -1,5 +1,7 @@
 # Lumina - The AI-Powered Style Engine
 
+![Build Status](https://github.com/AB0204/Lumina-AI/actions/workflows/ci.yml/badge.svg)
+
 Lumina is an intelligent visual commerce backend that understands fashion not just by keywords, but by *style, vibe, and visual similarity*. It leverages state-of-the-art computer vision models (Owlv2, SigLIP) to power next-generation e-commerce search.
 
 ## 🚀 The Vision
@@ -80,3 +82,4 @@ Services will be available at:
 - ✅ **Day 7**: Full-stack containerization (Docker & Compose)
 - ✅ **Day 8**: Text-to-Image search (Multimodal RAG)
 - ✅ **Day 9**: System optimization (Redis Caching & LCP)
+- ✅ **Day 10**: System robustness (CI/CD & Testing)
