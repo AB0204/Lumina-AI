@@ -120,6 +120,16 @@ PRODUCTS = [
 
 _prod_emb = None
 
+def _normalize(t):
+    """Safely normalize tensor from model output"""
+    if hasattr(t, 'text_embeds'):
+        t = t.text_embeds
+    if hasattr(t, 'pooler_output'):
+        t = t.pooler_output
+    if not isinstance(t, torch.Tensor):
+        t = t[0]
+    return t / t.norm(p=2, dim=-1, keepdim=True)
+
 def get_product_embeddings():
     global _prod_emb
     if _prod_emb is None:
@@ -127,8 +137,8 @@ def get_product_embeddings():
         texts = [p["desc"] for p in PRODUCTS]
         inputs = proc(text=texts, return_tensors="pt", padding=True).to(DEVICE)
         with torch.no_grad():
-            _prod_emb = model.get_text_features(**inputs)
-            _prod_emb = _prod_emb / _prod_emb.norm(p=2, dim=-1, keepdim=True)
+            out = model.get_text_features(**inputs)
+            _prod_emb = _normalize(out)
     return _prod_emb
 
 def search(query):
@@ -139,8 +149,7 @@ def search(query):
         embs = get_product_embeddings()
         inputs = proc(text=[query], return_tensors="pt", padding=True).to(DEVICE)
         with torch.no_grad():
-            qf = model.get_text_features(**inputs)
-            qf = qf / qf.norm(p=2, dim=-1, keepdim=True)
+            qf = _normalize(model.get_text_features(**inputs))
         sims = (qf @ embs.T).squeeze(0).cpu().numpy()
         top = sims.argsort()[::-1][:5]
 
