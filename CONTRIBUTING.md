@@ -1,62 +1,54 @@
 # Contributing to Lumina AI
 
-First off, thanks for taking the time to contribute! 🎉
+Thank you for your interest in contributing! Here's how to get started.
 
-The following is a set of guidelines for contributing to Lumina AI. These are mostly guidelines, not rules. Use your best judgment, and feel free to propose changes to this document in a pull request.
+## 🚀 Quick Setup
 
-## 🛠️ Development Setup
-
-1. **Fork the repository** on GitHub.
-2. **Clone your fork** locally:
+1. **Fork & Clone**
    ```bash
    git clone https://github.com/YOUR_USERNAME/Lumina-AI.git
    cd Lumina-AI
    ```
-3. **Install dependencies**:
+
+2. **Backend Setup**
    ```bash
-   # Backend
    cd backend
    python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
    pip install -r requirements.txt
+   cp .env.example .env
+   uvicorn app.main:app --reload
+   ```
 
-   # Frontend
-   cd ../frontend
+3. **Frontend Setup**
+   ```bash
+   cd frontend
    npm install
-   ```
-4. **Environment Variables**:
-   Copy `.env.example` to `.env` (if available) or create `.env.local` in `frontend/` with:
-   ```
-   NEXT_PUBLIC_API_URL=http://localhost:8000
+   npm run dev
    ```
 
-5. **Running the App**:
-   - Backend: `uvicorn main:app --reload` (port 8000)
-   - Frontend: `npm run dev` (port 3000)
+4. **Docker (Full Stack)**
+   ```bash
+   docker-compose up --build
+   ```
 
-## 🐛 Reporting Bugs
+## 📝 Guidelines
 
-Bugs are tracked as GitHub issues. When creating an issue, please include:
-- A clear and descriptive title
-- Steps to reproduce the problem
-- Expected behavior vs actual behavior
+- Follow existing code style
+- Write descriptive commit messages
+- Add tests for new features
+- Update documentation as needed
+
+## 🐛 Bug Reports
+
+Open an issue with:
+- Steps to reproduce
+- Expected behavior
+- Actual behavior
 - Screenshots (if applicable)
 
-## 💡 Suggesting Enhancements
+## 📬 Pull Requests
 
-Enhancement suggestions are tracked as GitHub issues. When creating an enhancement suggestion, please include:
-- A clear and descriptive title
-- Detailed description of the proposed enhancement
-- Why this enhancement would be useful
-
-##  pull Requests
-
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. Ensure the test suite passes.
-4. Make sure your code lints.
-5. descriptive commit messages are appreciated!
-
-## 📜 License
-
-By contributing, you agree that your contributions will be licensed under its MIT License.
+1. Create a feature branch: `git checkout -b feat/your-feature`
+2. Make changes and commit
+3. Push and open a PR against `main`
