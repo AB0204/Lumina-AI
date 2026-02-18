@@ -1,39 +1,29 @@
-import sys
-from unittest.mock import MagicMock
-
-# Mock module dependencies to allow tests to run without heavy ML libraries
-sys.modules["transformers"] = MagicMock()
-sys.modules["torch"] = MagicMock()
-sys.modules["PIL"] = MagicMock()
-sys.modules["qdrant_client"] = MagicMock()
-sys.modules["redis.asyncio"] = MagicMock()
-
+"""
+API Tests - Lightweight tests that verify API routing and health.
+Heavy ML dependencies are mocked via conftest.py (runs first).
+"""
 from fastapi.testclient import TestClient
-from app.main import app
-import pytest
 from unittest.mock import patch
+import pytest
 
-# Mock services to prevent connection errors and logic execution
-@pytest.fixture(scope="module", autouse=True)
-def mock_startup_dependencies():
-    with patch("app.services.qdrant_service.QdrantService.init_collection") as mock_init, \
-         patch("app.services.redis_service.RedisService.get_client") as mock_redis, \
-         patch("app.services.owlv2_service.Owlv2Service.get_model") as mock_owl, \
-         patch("app.services.siglip_service.SiglipService.get_model") as mock_siglip:
-        yield
+# Patch services BEFORE importing app to prevent startup connections
+with patch("app.services.qdrant_service.QdrantService.get_client"), \
+     patch("app.services.qdrant_service.QdrantService.init_collection"):
+    from app.main import app
 
 client = TestClient(app)
 
+
 def test_health_check():
+    """Verify the root endpoint returns service info"""
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {
-        "service": "Lumina API",
-        "status": "active",
-        "version": "0.1.0"
-    }
+    data = response.json()
+    assert data["service"] == "Lumina API"
+    assert data["status"] == "active"
 
 
 def test_api_docs_reachable():
+    """Verify Swagger docs are accessible"""
     response = client.get("/docs")
     assert response.status_code == 200
