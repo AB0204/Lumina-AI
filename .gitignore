@@ -3,8 +3,29 @@ __pycache__/
 *$py.class
 venv/
 .env
+.env.local
 .DS_Store
 .idea/
 .vscode/
+
 # Qdrant data (if local)
 qdrant_storage/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Docker
+*.log
+
+# Models (large files)
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# OS
+Thumbs.db
+*.swp
+*.swo
