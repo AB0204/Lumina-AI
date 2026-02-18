@@ -4,10 +4,11 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Next.js](https://img.shields.io/badge/next.js-15-black)
+[![Demo](https://img.shields.io/badge/🎬_Live_Demo-Hugging_Face-yellow)](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)
 
-> 🎬 **[Try Live Demo](demo/)** (Deploy to Hugging Face Spaces - FREE!)
+> 🎬 **[Try Live Demo](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)** — Runs FREE on Hugging Face Spaces!
 
-**[📊 Benchmarks](./BENCHMARKS.md)** • **[🏗️ Architecture](./ARCHITECTURE.md)** • **[🎮 Demo Setup](./demo/)** • **[🐳 Docker](#-deployment-docker)**
+**[📊 Benchmarks](./BENCHMARKS.md)** • **[🏗️ Architecture](./ARCHITECTURE.md)** • **[🎮 Demo](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)** • **[🐳 Docker](#-deployment-docker)**
 
 Lumina is an intelligent visual commerce backend that understands fashion not just by keywords, but by *style, vibe, and visual similarity*. It leverages state-of-the-art computer vision models (Owlv2, SigLIP) to power next-generation e-commerce search.
 
