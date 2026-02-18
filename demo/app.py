@@ -1,274 +1,252 @@
 """
-Lumina AI - Gradio Demo
-A visual commerce engine with semantic fashion search
+Lumina AI - Visual Commerce Demo
+Powered by OWLv2 + SigLIP
 """
 
 import gradio as gr
 import torch
-from PIL import Image, ImageDraw, ImageFont
-from transformers import Owlv2Processor, Owlv2ForObjectDetection, SiglipProcessor, SiglipModel
 import numpy as np
-from typing import List, Tuple, Dict
-import json
+from PIL import Image, ImageDraw
+from transformers import Owlv2Processor, Owlv2ForObjectDetection, AutoTokenizer, AutoModel, AutoProcessor
 
-# ===== MODEL INITIALIZATION =====
-class ModelCache:
-    """Singleton pattern for model caching"""
-    _owlv2_processor = None
-    _owlv2_model = None
-    _siglip_processor = None
-    _siglip_model = None
-    _product_embeddings = None
-    _product_data = None
+# ===== GLOBAL MODEL CACHE =====
+owlv2_processor = None
+owlv2_model = None
+siglip_processor = None
+siglip_model = None
+
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+def load_owlv2():
+    global owlv2_processor, owlv2_model
+    if owlv2_processor is None:
+        print("Loading OWLv2...")
+        owlv2_processor = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
+        owlv2_model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble").to(DEVICE)
+        owlv2_model.eval()
+        print("OWLv2 loaded!")
+    return owlv2_processor, owlv2_model
+
+def load_siglip():
+    global siglip_processor, siglip_model
+    if siglip_processor is None:
+        print("Loading SigLIP...")
+        siglip_processor = AutoProcessor.from_pretrained("google/siglip-base-patch16-224")
+        siglip_model = AutoModel.from_pretrained("google/siglip-base-patch16-224").to(DEVICE)
+        siglip_model.eval()
+        print("SigLIP loaded!")
+    return siglip_processor, siglip_model
+
+
+# ===== DETECTION =====
+FASHION_LABELS = ["dress", "shirt", "pants", "shoes", "bag", "jacket", "hat", "sunglasses", "skirt", "coat"]
+
+COLORS = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E9"]
+
+def detect_fashion(image):
+    if image is None:
+        return None, "Please upload an image"
     
-    @classmethod
-    def get_owlv2(cls):
-        if cls._owlv2_processor is None:
-            print("Loading OWLv2...")
-            cls._owlv2_processor = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
-            cls._owlv2_model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble")
-            cls._owlv2_model.eval()
-            if torch.cuda.is_available():
-                cls._owlv2_model = cls._owlv2_model.cuda()
-        return cls._owlv2_processor, cls._owlv2_model
-    
-    @classmethod
-    def get_siglip(cls):
-        if cls._siglip_processor is None:
-            print("Loading SigLIP...")
-            cls._siglip_processor = SiglipProcessor.from_pretrained("google/siglip-base-patch16-384")
-            cls._siglip_model = SiglipModel.from_pretrained("google/siglip-base-patch16-384")
-            cls._siglip_model.eval()
-            if torch.cuda.is_available():
-                cls._siglip_model = cls._siglip_model.cuda()
-        return cls._siglip_processor, cls._siglip_model
-    
-    @classmethod
-    def load_products(cls):
-        """Load pre-computed product embeddings and metadata"""
-        if cls._product_data is None:
-            # Sample dataset (in production, load from file)
-            cls._product_data = [
-                {"title": "Red Floral Summer Dress", "price": 49.99, "category": "Dresses", "url": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400"},
-                {"title": "Classic Denim Jacket", "price": 79.99, "category": "Jackets", "url": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400"},
-                {"title": "White Sneakers", "price": 89.99, "category": "Shoes", "url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"},
-                {"title": "Leather Crossbody Bag", "price": 129.99, "category": "Bags", "url": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400"},
-                {"title": "Black Sunglasses", "price": 149.99, "category": "Accessories", "url": "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400"},
-            ]
-            # Precompute embeddings
-            cls._product_embeddings = cls._compute_embeddings()
-        return cls._product_data, cls._product_embeddings
-    
-    @classmethod
-    def _compute_embeddings(cls):
-        """Compute embeddings for all products"""
-        processor, model = cls.get_siglip()
-        embeddings = []
+    try:
+        processor, model = load_owlv2()
         
-        for product in cls._product_data:
-            # In production, use actual product images
-            # For demo, use text embeddings
-            inputs = processor(text=[product["title"]], return_tensors="pt", padding="max_length")
-            if torch.cuda.is_available():
-                inputs = {k: v.cuda() for k, v in inputs.items()}
+        image = image.convert("RGB")
+        texts = [FASHION_LABELS]
+        inputs = processor(text=texts, images=image, return_tensors="pt").to(DEVICE)
+        
+        with torch.no_grad():
+            outputs = model(**inputs)
+        
+        target_sizes = torch.tensor([image.size[::-1]]).to(DEVICE)
+        results = processor.post_process_object_detection(outputs=outputs, target_sizes=target_sizes, threshold=0.1)[0]
+        
+        draw = ImageDraw.Draw(image)
+        detections = []
+        
+        for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
+            box_coords = [round(i, 1) for i in box.cpu().tolist()]
+            label_text = FASHION_LABELS[label]
+            conf = round(score.item() * 100, 1)
+            color = COLORS[label % len(COLORS)]
             
-            with torch.no_grad():
-                text_features = model.get_text_features(**inputs)
-                text_features = text_features / text_features.norm(p=2, dim=-1, keepdim=True)
+            draw.rectangle(box_coords, outline=color, width=3)
+            draw.rectangle([box_coords[0], box_coords[1]-18, box_coords[0]+len(label_text)*8+40, box_coords[1]], fill=color)
+            draw.text((box_coords[0]+4, box_coords[1]-16), f"{label_text} {conf}%", fill="white")
             
-            embeddings.append(text_features.cpu().numpy()[0])
+            detections.append(f"✅ **{label_text.capitalize()}** — {conf}% confidence")
         
-        return np.array(embeddings)
-
-
-# ===== DETECTION FUNCTION =====
-def detect_objects(image: Image.Image) -> Tuple[Image.Image, str]:
-    """Detect fashion items in image and draw bounding boxes"""
-    processor, model = ModelCache.get_owlv2()
-    
-    # Fashion categories
-    texts = [["dress", "shirt", "pants", "shoes", "bag", "jacket", "hat", "sunglasses", "watch"]]
-    
-    inputs = processor(text=texts, images=image, return_tensors="pt")
-    if torch.cuda.is_available():
-        inputs = {k: v.cuda() for k, v in inputs.items()}
-    
-    with torch.no_grad():
-        outputs = model(**inputs)
-    
-    # Post-process
-    target_sizes = torch.tensor([image.size[::-1]])
-    results = processor.post_process_object_detection(outputs=outputs, target_sizes=target_sizes, threshold=0.1)[0]
-    
-    # Draw bounding boxes
-    draw = ImageDraw.Draw(image)
-    detections_text = []
-    
-    for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
-        box = [round(i, 2) for i in box.tolist()]
-        label_text = texts[0][label]
-        confidence = round(score.item(), 2)
+        if not detections:
+            return image, "No fashion items detected. Try a clearer outfit photo!"
         
-        # Draw box
-        draw.rectangle(box, outline="red", width=3)
-        draw.text((box[0], box[1]-10), f"{label_text} ({confidence})", fill="red")
+        result_text = f"### 🎯 Detected {len(detections)} item(s)\n\n" + "\n".join(detections)
+        return image, result_text
         
-        detections_text.append(f"✅ {label_text.capitalize()} - {confidence*100:.0f}% confidence")
-    
-    result_text = "\n".join(detections_text) if detections_text else "No items detected. Try a fashion image!"
-    
-    return image, result_text
+    except Exception as e:
+        return image, f"Error: {str(e)}"
 
 
-# ===== VIBE CHECK FUNCTION =====
-def vibe_check(image: Image.Image) -> str:
-    """Analyze style, occasion, and vibe of the image"""
-    processor, model = ModelCache.get_siglip()
+# ===== VIBE CHECK =====
+def vibe_check(image):
+    if image is None:
+        return "Please upload an image"
     
-    # Style categories
-    occasions = ["casual", "formal", "party", "beach", "wedding", "office", "gym", "date night"]
-    vibes = ["bohemian", "minimalist", "vintage", "streetwear", "elegant", "sporty", "edgy"]
-    
-    # Compute image embedding
-    inputs = processor(images=image, return_tensors="pt")
-    if torch.cuda.is_available():
-        inputs = {k: v.cuda() for k, v in inputs.items()}
-    
-    with torch.no_grad():
-        image_features = model.get_image_features(**inputs)
-        image_features = image_features / image_features.norm(p=2, dim=-1, keepdim=True)
-    
-    # Compare with text categories
-    text_inputs = processor(text=occasions + vibes, return_tensors="pt", padding="max_length")
-    if torch.cuda.is_available():
-        text_inputs = {k: v.cuda() for k, v in text_inputs.items()}
-    
-    with torch.no_grad():
-        text_features = model.get_text_features(**text_inputs)
-        text_features = text_features / text_features.norm(p=2, dim=-1, keepdim=True)
-    
-    # Compute similarities
-    similarities = (image_features @ text_features.T).cpu().numpy()[0]
-    
-    # Get top matches
-    top_occasion_idx = similarities[:len(occasions)].argmax()
-    top_vibe_idx = len(occasions) + similarities[len(occasions):].argmax()
-    
-    result = f"""
-🎯 **Style Analysis**
+    try:
+        processor, model = load_siglip()
+        image = image.convert("RGB")
+        
+        occasions = ["casual everyday", "formal business", "party night out", "beach vacation", "wedding guest", "gym workout", "date night", "office professional"]
+        vibes = ["bohemian free spirit", "minimalist clean", "vintage retro", "streetwear urban", "elegant luxury", "sporty athletic", "edgy punk", "preppy classic"]
+        
+        all_labels = occasions + vibes
+        
+        inputs = processor(text=all_labels, images=image, return_tensors="pt", padding="max_length", truncation=True).to(DEVICE)
+        
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits_per_image[0]
+            probs = torch.softmax(logits, dim=-1).cpu().numpy()
+        
+        occasion_scores = list(zip(occasions, probs[:len(occasions)]))
+        vibe_scores = list(zip(vibes, probs[len(occasions):]))
+        
+        occasion_scores.sort(key=lambda x: x[1], reverse=True)
+        vibe_scores.sort(key=lambda x: x[1], reverse=True)
+        
+        result = f"""## ✨ Style Analysis
 
-**Occasion**: {occasions[top_occasion_idx].capitalize()} ({similarities[top_occasion_idx]*100:.0f}%)
-**Vibe**: {vibes[top_vibe_idx - len(occasions)].capitalize()} ({similarities[top_vibe_idx]*100:.0f}%)
+### 🎯 Best Occasion
+**{occasion_scores[0][0].title()}** — {occasion_scores[0][1]*100:.0f}% match
 
-**Other Matches**:
+### 🎨 Aesthetic Vibe  
+**{vibe_scores[0][0].title()}** — {vibe_scores[0][1]*100:.0f}% match
+
+### 📊 All Occasion Scores
 """
-    # Add top 3 matches
-    sorted_idx = similarities.argsort()[::-1][:5]
-    for idx in sorted_idx:
-        if idx < len(occasions):
-            result += f"\n- {occasions[idx].capitalize()}: {similarities[idx]*100:.0f}%"
-        else:
-            result += f"\n- {vibes[idx - len(occasions)].capitalize()}: {similarities[idx]*100:.0f}%"
-    
-    return result
+        for label, score in occasion_scores[:5]:
+            bar = "█" * int(score * 30)
+            result += f"\n{label.title()}: {bar} {score*100:.0f}%"
+        
+        result += "\n\n### 🎭 All Vibe Scores\n"
+        for label, score in vibe_scores[:5]:
+            bar = "█" * int(score * 30)
+            result += f"\n{label.title()}: {bar} {score*100:.0f}%"
+        
+        return result
+        
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
-# ===== SEARCH FUNCTION =====
-def semantic_search(query: str, top_k: int = 5) -> str:
-    """Search products by text query"""
-    processor, model = ModelCache.get_siglip()
-    product_data, product_embeddings = ModelCache.load_products()
+# ===== SEMANTIC SEARCH =====
+SAMPLE_PRODUCTS = [
+    {"name": "Red Floral Maxi Dress", "category": "Dresses", "price": 49.99, "style": "bohemian summer dress with floral print"},
+    {"name": "Classic Denim Jacket", "category": "Outerwear", "price": 79.99, "style": "blue denim trucker jacket casual"},
+    {"name": "White Canvas Sneakers", "category": "Shoes", "price": 59.99, "style": "minimalist white low-top sneakers"},
+    {"name": "Black Leather Handbag", "category": "Bags", "price": 129.99, "style": "elegant black crossbody leather bag"},
+    {"name": "Gold Aviator Sunglasses", "category": "Accessories", "price": 89.99, "style": "vintage gold frame aviator sunglasses"},
+    {"name": "Navy Slim Fit Chinos", "category": "Pants", "price": 44.99, "style": "smart casual navy blue slim pants"},
+    {"name": "Silk Blouse Cream", "category": "Tops", "price": 69.99, "style": "elegant cream silk button-up blouse formal"},
+    {"name": "Running Shoes Black", "category": "Shoes", "price": 99.99, "style": "sporty black running athletic shoes"},
+    {"name": "Wool Overcoat Grey", "category": "Outerwear", "price": 199.99, "style": "formal grey wool long overcoat winter"},
+    {"name": "Striped T-Shirt", "category": "Tops", "price": 24.99, "style": "casual blue white striped cotton t-shirt"},
+    {"name": "Pleated Midi Skirt", "category": "Skirts", "price": 54.99, "style": "elegant pleated satin midi skirt formal"},
+    {"name": "Crossbody Canvas Bag", "category": "Bags", "price": 39.99, "style": "casual canvas crossbody messenger bag"},
+]
+
+product_embeddings = None
+
+def get_product_embeddings():
+    global product_embeddings
+    if product_embeddings is None:
+        processor, model = load_siglip()
+        texts = [p["style"] for p in SAMPLE_PRODUCTS]
+        inputs = processor(text=texts, return_tensors="pt", padding="max_length", truncation=True).to(DEVICE)
+        with torch.no_grad():
+            text_features = model.get_text_features(**inputs)
+            product_embeddings = text_features / text_features.norm(p=2, dim=-1, keepdim=True)
+    return product_embeddings
+
+def search_products(query):
+    if not query or not query.strip():
+        return "Please enter a search query"
     
-    # Compute query embedding
-    inputs = processor(text=[query], return_tensors="pt", padding="max_length")
-    if torch.cuda.is_available():
-        inputs = {k: v.cuda() for k, v in inputs.items()}
-    
-    with torch.no_grad():
-        query_features = model.get_text_features(**inputs)
-        query_features = query_features / query_features.norm(p=2, dim=-1, keepdim=True)
-    
-    # Compute similarities
-    query_embedding = query_features.cpu().numpy()[0]
-    similarities = np.dot(product_embeddings, query_embedding)
-    
-    # Get top results
-    top_indices = similarities.argsort()[::-1][:top_k]
-    
-    result = f"### 🔍 Search Results for: \"{query}\"\n\n"
-    for idx in top_indices:
-        product = product_data[idx]
-        score = similarities[idx]
-        result += f"""
-**{product['title']}**
-- Price: ${product['price']}
-- Category: {product['category']}
-- Similarity: {score*100:.1f}%
-- [View Product]({product['url']})
+    try:
+        processor, model = load_siglip()
+        embeddings = get_product_embeddings()
+        
+        inputs = processor(text=[query], return_tensors="pt", padding="max_length", truncation=True).to(DEVICE)
+        with torch.no_grad():
+            query_features = model.get_text_features(**inputs)
+            query_features = query_features / query_features.norm(p=2, dim=-1, keepdim=True)
+        
+        similarities = (query_features @ embeddings.T).squeeze(0).cpu().numpy()
+        top_indices = similarities.argsort()[::-1][:5]
+        
+        result = f"## 🔍 Results for: \"{query}\"\n\n"
+        for rank, idx in enumerate(top_indices, 1):
+            p = SAMPLE_PRODUCTS[idx]
+            score = similarities[idx] * 100
+            result += f"""### {rank}. {p['name']}
+- **Category**: {p['category']}
+- **Price**: ${p['price']}
+- **Match**: {score:.1f}%
 
 ---
 """
-    
-    return result
+        return result
+        
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 
-# ===== GRADIO INTERFACE =====
-with gr.Blocks(title="Lumina AI - Visual Search Demo", theme=gr.themes.Soft()) as demo:
-    gr.Markdown("""
-    # 🔮 Lumina AI - Visual Commerce Engine
-    ### AI-powered fashion search using OWLv2, SigLIP, and semantic embeddings
-    """)
+# ===== GRADIO UI =====
+css = """
+.gradio-container { max-width: 1100px !important; }
+h1 { text-align: center; color: #7c3aed; }
+"""
+
+with gr.Blocks(title="Lumina AI", css=css, theme=gr.themes.Soft()) as demo:
+    gr.Markdown("# 🔮 Lumina AI — Visual Commerce Engine")
+    gr.Markdown("AI-powered fashion search using **OWLv2** for detection and **SigLIP** for semantic understanding")
     
     with gr.Tabs():
-        # Tab 1: Object Detection
-        with gr.Tab("🎯 Object Detection"):
-            gr.Markdown("Upload a fashion image to detect items with bounding boxes")
+        with gr.Tab("🎯 Detect Items"):
+            gr.Markdown("Upload a fashion photo to detect individual items")
             with gr.Row():
                 with gr.Column():
-                    detect_input = gr.Image(type="pil", label="Upload Image")
-                    detect_btn = gr.Button("Detect Items", variant="primary")
+                    det_input = gr.Image(type="pil", label="Upload Image")
+                    det_btn = gr.Button("Detect Fashion Items", variant="primary", size="lg")
                 with gr.Column():
-                    detect_output_img = gr.Image(label="Detected Objects")
-                    detect_output_text = gr.Textbox(label="Detection Results", lines=10)
-            
-            detect_btn.click(fn=detect_objects, inputs=detect_input, outputs=[detect_output_img, detect_output_text])
+                    det_output_img = gr.Image(label="Detection Results")
+                    det_output_text = gr.Markdown()
+            det_btn.click(fn=detect_fashion, inputs=det_input, outputs=[det_output_img, det_output_text])
         
-        # Tab 2: Vibe Check
         with gr.Tab("✨ Vibe Check"):
             gr.Markdown("Analyze the style, occasion, and aesthetic of an outfit")
             with gr.Row():
                 with gr.Column():
-                    vibe_input = gr.Image(type="pil", label="Upload Image")
-                    vibe_btn = gr.Button("Analyze Vibe", variant="primary")
+                    vibe_input = gr.Image(type="pil", label="Upload Outfit Photo")
+                    vibe_btn = gr.Button("Analyze Vibe", variant="primary", size="lg")
                 with gr.Column():
-                    vibe_output = gr.Markdown(label="Style Analysis")
-            
+                    vibe_output = gr.Markdown()
             vibe_btn.click(fn=vibe_check, inputs=vibe_input, outputs=vibe_output)
         
-        # Tab 3: Semantic Search
-        with gr.Tab("🔍 Semantic Search"):
-            gr.Markdown("Search for products using natural language")
+        with gr.Tab("🔍 Search Products"):
+            gr.Markdown("Search our catalog using natural language")
             with gr.Row():
                 with gr.Column():
-                    search_input = gr.Textbox(label="Search Query", placeholder="e.g., 'red dress for summer party'")
-                    search_examples = gr.Examples(
-                        examples=["red dress for beach wedding", "casual denim jacket", "elegant black handbag"],
+                    search_input = gr.Textbox(label="What are you looking for?", placeholder="e.g., elegant dress for a wedding")
+                    gr.Examples(
+                        examples=["red summer dress", "casual jacket for weekend", "elegant formal outfit", "sporty running shoes", "vintage style accessories"],
                         inputs=search_input
                     )
-                    search_btn = gr.Button("Search", variant="primary")
+                    search_btn = gr.Button("Search", variant="primary", size="lg")
                 with gr.Column():
-                    search_output = gr.Markdown(label="Search Results")
-            
-            search_btn.click(fn=semantic_search, inputs=search_input, outputs=search_output)
+                    search_output = gr.Markdown()
+            search_btn.click(fn=search_products, inputs=search_input, outputs=search_output)
     
-    gr.Markdown("""
-    ---
-    **Built with** [OWLv2](https://huggingface.co/google/owlv2-base-patch16-ensemble) • 
-    [SigLIP](https://huggingface.co/google/siglip-base-patch16-384) • 
-    [Gradio](https://gradio.app)
-    
-    [GitHub](https://github.com/AB0204/Lumina-AI) • [Documentation](https://github.com/AB0204/Lumina-AI/blob/main/README.md)
-    """)
+    gr.Markdown("---")
+    gr.Markdown("Built with ❤️ by [Abhi Bhardwaj](https://github.com/AB0204) • [GitHub](https://github.com/AB0204/Lumina-AI)")
 
 if __name__ == "__main__":
     demo.launch()
