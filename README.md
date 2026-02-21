@@ -1,10 +1,12 @@
 # Lumina - The AI-Powered Style Engine
 
-![Build Status](https://github.com/AB0204/Lumina-AI/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Python](https://img.shields.io/badge/python-3.11-blue)
-![Next.js](https://img.shields.io/badge/next.js-15-black)
-[![Demo](https://img.shields.io/badge/🎬_Live_Demo-Hugging_Face-yellow)](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-000000?logo=next.js&logoColor=white)](https://nextjs.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://docker.com)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Live%20Demo-Hugging%20Face-yellow)](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)
+[![GitHub Stars](https://img.shields.io/github/stars/AB0204/Lumina-AI?style=social)](https://github.com/AB0204/Lumina-AI)
 
 > 🎬 **[Try Live Demo](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)** — Runs FREE on Hugging Face Spaces!
 
