@@ -18,7 +18,7 @@ Lumina is an intelligent visual commerce backend that understands fashion not ju
   <img src="assets/demo-detect.png" alt="Lumina AI - Object Detection" width="800">
 </p>
 
-<p align="center"><em>Detect Items — Upload any fashion image for AI-powered zero-shot object detection (OWLv2)</em></p>
+<p align="center"><em>Upload any fashion image → AI detects items with bounding boxes & confidence scores</em></p>
 
 <p align="center">
   <img src="assets/demo-search.png" alt="Lumina AI - Semantic Search" width="800">
