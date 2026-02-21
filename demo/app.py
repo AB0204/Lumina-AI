@@ -70,7 +70,7 @@ def detect_fashion(image):
         with torch.no_grad():
             outputs = model(**inputs)
         target_sizes = torch.tensor([image.size[::-1]]).to(DEVICE)
-        results = proc.post_process_object_detection(outputs=outputs, target_sizes=target_sizes, threshold=0.1)[0]
+        results = proc.image_processor.post_process_object_detection(outputs=outputs, target_sizes=target_sizes, threshold=0.1)[0]
 
         draw = ImageDraw.Draw(image)
         lines = []
