@@ -12,6 +12,22 @@
 
 Lumina is an intelligent visual commerce backend that understands fashion not just by keywords, but by *style, vibe, and visual similarity*. It leverages state-of-the-art computer vision models (Owlv2, SigLIP) to power next-generation e-commerce search.
 
+## 🎬 Demo
+
+<p align="center">
+  <img src="assets/demo-detect.png" alt="Lumina AI - Object Detection" width="800">
+</p>
+
+<p align="center"><em>Upload any fashion image → AI detects items with zero-shot object detection (OWLv2)</em></p>
+
+<p align="center">
+  <img src="assets/demo-search.png" alt="Lumina AI - Semantic Search" width="800">
+</p>
+
+<p align="center"><em>Search by natural language → Get semantically matched products with confidence scores</em></p>
+
+> 🔗 **[Try it yourself →](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)** — Runs FREE on Hugging Face Spaces!
+
 ## 🚀 The Vision
 Traditional search: "Red dress" -> Returns 10,000 red dresses.
 **Lumina Search**: "Find me a dress with this *bohemian vibe* but for a *formal wedding*" -> Returns the perfect match.
