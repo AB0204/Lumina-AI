@@ -15,16 +15,16 @@ Lumina is an intelligent visual commerce backend that understands fashion not ju
 ## 🎬 Demo
 
 <p align="center">
-  <img src="assets/demo-detect.png" alt="Lumina AI - Object Detection" width="800">
+  <img src="assets/demo-detect.png" alt="Lumina AI - Detect Items" width="800">
 </p>
 
-<p align="center"><em>Upload any fashion image → AI detects items with bounding boxes & confidence scores</em></p>
+<p align="center"><em>🔍 Detect Items — Zero-shot object detection identifies fashion items with bounding boxes & confidence scores</em></p>
 
 <p align="center">
-  <img src="assets/demo-search.png" alt="Lumina AI - Semantic Search" width="800">
+  <img src="assets/demo-vibe.png" alt="Lumina AI - Vibe Check" width="800">
 </p>
 
-<p align="center"><em>Search by natural language → Get semantically matched products with confidence scores</em></p>
+<p align="center"><em>✨ Vibe Check — AI analyzes outfit style, occasion fit & fashion vibe using CLIP embeddings</em></p>
 
 > 🔗 **[Try it yourself →](https://huggingface.co/spaces/Ab0202000/lumina-ai-demo)** — Runs FREE on Hugging Face Spaces!
 
